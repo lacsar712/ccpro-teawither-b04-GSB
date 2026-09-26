@@ -16,7 +16,9 @@
       <td>{{ g.notes|default:"—" }}</td>
       <td class="actions">
         <a class="btn btn-sm btn-secondary" href="{% url 'garden_edit' g.pk %}">编辑</a>
+        {% if perms.gardens.delete_garden %}
         <a class="btn btn-sm btn-danger" href="{% url 'garden_delete' g.pk %}">删除</a>
+        {% endif %}
       </td>
     </tr>
     {% endfor %}

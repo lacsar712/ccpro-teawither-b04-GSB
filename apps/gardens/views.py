@@ -20,6 +20,30 @@ def _wants_htmx(request):
     return request.headers.get("HX-Request") == "true"
 
 
+class SupervisorDeleteMixin:
+    """删除操作仅主管可用。
+
+    萎凋工（无 delete 权限）访问任一删除入口（GET 确认页或 POST）都会被
+    拒绝并收到中文说明，重定向回对应列表页。三个删除入口共用此 mixin，
+    保证规则一致。需与 LoginRequiredMixin 连用（登录鉴权不关闭）。
+    """
+
+    delete_permission = None
+    list_url_name = None
+
+    def dispatch(self, request, *args, **kwargs):
+        if self.delete_permission and not request.user.has_perm(
+            self.delete_permission
+        ):
+            messages.error(
+                request,
+                "仅主管可执行删除操作；萎凋工可新建和修改，"
+                "但不能删除茶园、萎凋槽与批次。",
+            )
+            return redirect(self.list_url_name)
+        return super().dispatch(request, *args, **kwargs)
+
+
 @login_required
 def home(request):
     context = {
@@ -82,12 +106,28 @@ class GardenUpdateView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
-class GardenDeleteView(LoginRequiredMixin, DeleteView):
+class GardenDeleteView(LoginRequiredMixin, SupervisorDeleteMixin, DeleteView):
     model = Garden
     template_name = "gardens/confirm_delete.html"
     success_url = reverse_lazy("garden_list")
+    delete_permission = "gardens.delete_garden"
+    list_url_name = "garden_list"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["child_count"] = self.object.troughs.count()
+        return context
 
     def form_valid(self, form):
+        # 删除茶园前必须检查槽位：仍有槽则拒绝，不做级联删除。
+        trough_count = self.object.troughs.count()
+        if trough_count:
+            messages.error(
+                self.request,
+                f"无法删除茶园「{self.object.name}」：其下仍有 "
+                f"{trough_count} 个萎凋槽，请先删除全部槽位后再删除茶园。",
+            )
+            return redirect("garden_list")
         messages.success(self.request, "茶园已删除")
         return super().form_valid(form)
 
@@ -137,12 +177,28 @@ class TroughUpdateView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
-class TroughDeleteView(LoginRequiredMixin, DeleteView):
+class TroughDeleteView(LoginRequiredMixin, SupervisorDeleteMixin, DeleteView):
     model = Trough
     template_name = "troughs/confirm_delete.html"
     success_url = reverse_lazy("trough_list")
+    delete_permission = "gardens.delete_trough"
+    list_url_name = "trough_list"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["child_count"] = self.object.batches.count()
+        return context
 
     def form_valid(self, form):
+        # 删除槽位前必须检查批次：仍有批次则拒绝，不做级联删除。
+        batch_count = self.object.batches.count()
+        if batch_count:
+            messages.error(
+                self.request,
+                f"无法删除萎凋槽「{self.object}」：其下仍有 "
+                f"{batch_count} 个萎凋批次，请先删除全部批次后再删除槽位。",
+            )
+            return redirect("trough_list")
         messages.success(self.request, "萎凋槽已删除")
         return super().form_valid(form)
 
@@ -192,10 +248,12 @@ class BatchUpdateView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
-class BatchDeleteView(LoginRequiredMixin, DeleteView):
+class BatchDeleteView(LoginRequiredMixin, SupervisorDeleteMixin, DeleteView):
     model = WitherBatch
     template_name = "batches/confirm_delete.html"
     success_url = reverse_lazy("batch_list")
+    delete_permission = "gardens.delete_witherbatch"
+    list_url_name = "batch_list"
 
     def form_valid(self, form):
         messages.success(self.request, "萎凋批次已删除")
