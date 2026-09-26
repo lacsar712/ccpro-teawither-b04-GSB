@@ -20,7 +20,9 @@
       <td><span class="badge badge-{{ t.status }}">{{ t.get_status_display }}</span></td>
       <td class="actions">
         <a class="btn btn-sm btn-secondary" href="{% url 'trough_edit' t.pk %}">编辑</a>
+        {% if perms.gardens.delete_trough %}
         <a class="btn btn-sm btn-danger" href="{% url 'trough_delete' t.pk %}">删除</a>
+        {% endif %}
       </td>
     </tr>
     {% endfor %}

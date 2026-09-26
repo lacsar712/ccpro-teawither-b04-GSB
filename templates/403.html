@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}无权操作{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>无权执行该操作（403）</h1>
+</div>
+<div class="card">
+  <p style="font-size:1.05rem;line-height:1.7">{{ message|default:"权限不足，无法执行该操作。" }}</p>
+  <p class="muted">
+    角色权限：萎凋工可以新建、编辑茶园 / 萎凋槽 / 萎凋批次，但不能删除；
+    只有主管可以删除。删除茶园前须先清空其下槽位，删除槽位前须先清空其下批次。
+  </p>
+  <div class="actions">
+    <a class="btn" href="{% url 'home' %}">返回首页</a>
+  </div>
+</div>
+{% endblock %}

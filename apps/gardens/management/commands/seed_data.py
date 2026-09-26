@@ -4,8 +4,13 @@ from apps.gardens.seed import ensure_seed_data
 
 
 class Command(BaseCommand):
-    help = "写入演示账号与样例茶园/槽位/萎凋批次数据（幂等）"
+    help = "写入演示账号/角色与样例茶园/槽位/批次数据（幂等）"
 
     def handle(self, *args, **options):
         ensure_seed_data()
-        self.stdout.write(self.style.SUCCESS("种子数据已就绪（admin / witherer）"))
+        self.stdout.write(
+            self.style.SUCCESS(
+                "种子数据已就绪（admin 超级用户 / supervisor 主管 / "
+                "witherer 萎凋工，密码均为 123456）"
+            )
+        )

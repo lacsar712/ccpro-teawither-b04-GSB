@@ -290,6 +290,11 @@ table.data tr:hover td {
   color: var(--muted);
 }
 
+.error-text {
+  color: var(--danger);
+  font-weight: 600;
+}
+
 .empty {
   padding: 1.25rem;
   text-align: center;

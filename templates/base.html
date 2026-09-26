@@ -19,7 +19,7 @@
       <a href="{% url 'batch_list' %}" class="{% if 'batch' in request.resolver_match.url_name %}active{% endif %}">萎凋批次</a>
     </div>
     <div class="nav-user">
-      <span>{{ user.username }}</span>
+      <span>{{ user.username }}（{% if perms.gardens.delete_garden %}主管{% else %}萎凋工{% endif %}）</span>
       <form method="post" action="{% url 'logout' %}" style="margin:0">
         {% csrf_token %}
         <button type="submit" class="btn btn-sm btn-secondary" style="background:transparent;border:1px solid rgba(255,255,255,.45)">退出</button>

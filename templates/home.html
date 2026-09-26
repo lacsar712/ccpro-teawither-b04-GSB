@@ -13,4 +13,24 @@
   <div class="stat"><div class="num">{{ ready_count }}</div><div class="label">可下槽</div></div>
 </div>
 <p class="muted" style="margin-top:1.25rem">规则提示：槽位设为「可下槽」时，最新批次实测含水率须已填写且不超过 40%。</p>
+
+<div class="card" style="margin-top:1rem">
+  <h2 style="margin-top:0;font-size:1.05rem">角色与删除权限</h2>
+  <table class="data" style="margin-bottom:0.75rem">
+    <thead>
+      <tr><th>操作</th><th>萎凋工</th><th>主管</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>查看 茶园 / 槽位 / 批次</td><td>允许</td><td>允许</td></tr>
+      <tr><td>新建 茶园 / 槽位 / 批次</td><td>允许</td><td>允许</td></tr>
+      <tr><td>编辑 茶园 / 槽位 / 批次</td><td>允许</td><td>允许</td></tr>
+      <tr><td>删除 茶园 / 槽位 / 批次</td><td>禁止</td><td>允许</td></tr>
+    </tbody>
+  </table>
+  <p class="muted" style="margin-bottom:0">
+    删除约束（后端强制）：茶园下仍有槽位时禁止删茶园；槽位下仍有批次时禁止删槽位；
+    批次为末级记录可直接删除。当前登录身份：<strong>{{ user.username }}</strong>
+    （{% if perms.gardens.delete_garden %}主管，可删除{% else %}萎凋工，不可删除{% endif %}）。
+  </p>
+</div>
 {% endblock %}
